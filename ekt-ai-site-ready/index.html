@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ekt.kz — витрина и ИИ-консультант</title>
+<style>
+:root{
+  --bg:#EBEDF0; --surface:#fff; --text:#1C2024; --muted:#6B7280;
+  --accent:#B5692C; --accent-text:#fff; --border:#D7DAE0; --bot:#E7E9EC;
+  --header-bg:#20242A; --header-text:#F1F1EF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --surface:#1B1E22; --text:#E7E9EC; --muted:#9BA1A8;
+    --accent:#D98A4B; --accent-text:#14171A; --border:#2A2E34; --bot:#242832;
+    --header-bg:#0E1013; --header-text:#F1F1EF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#1B1E22; --text:#E7E9EC; --muted:#9BA1A8;
+  --accent:#D98A4B; --accent-text:#14171A; --border:#2A2E34; --bot:#242832;
+  --header-bg:#0E1013; --header-text:#F1F1EF;
+}
+*{box-sizing:border-box;}
+html,body{min-height:100%;margin:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+.page{max-width:1000px;margin:0 auto;background:var(--surface);min-height:100%;}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--header-bg);color:var(--header-text);flex-wrap:wrap;}
+.brand{font-weight:700;font-size:16px;white-space:nowrap;}
+.cats{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:120px;}
+.catchip{background:rgba(255,255,255,.08);color:#D7DAE0;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 10px;font-size:12.5px;white-space:nowrap;cursor:pointer;}
+.catchip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+.cartbtn{background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;white-space:nowrap;font-size:13.5px;}
+.cartDrawer{border-bottom:1px solid var(--border);padding:12px 16px;background:var(--bg);font-size:13.5px;}
+.cartDrawer .crow{display:flex;justify-content:space-between;padding:3px 0;}
+.clearbtn{background:none;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;color:var(--muted);cursor:pointer;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;padding:14px 16px;}
+.card{border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:5px;}
+.swatch{height:5px;border-radius:3px;}
+.cname{font-size:13px;font-weight:600;line-height:1.25;min-height:33px;}
+.cspec{font-size:11.5px;color:var(--muted);}
+.crow2{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:2px;}
+.cprice{font-weight:700;}
+.cstock{font-size:11px;}
+.cstock.in{color:#2E8B57;}
+.cstock.out{color:#C0392B;}
+.addbtn{margin-top:4px;border:none;border-radius:7px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-text);}
+.addbtn:disabled{opacity:.6;cursor:default;}
+.chatdock{border-top:3px solid var(--border);}
+.chatheader{padding:12px 16px;font-weight:700;font-size:14.5px;border-bottom:1px solid var(--border);}
+.chatheader span{font-weight:400;color:var(--muted);font-size:12px;}
+.msgs{height:min(50vh,420px);overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:9px;}
+.msg{max-width:84%;padding:9px 12px;border-radius:10px;line-height:1.42;font-size:14px;white-space:pre-wrap;}
+.msg.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:3px;}
+.msg.typing{font-style:italic;color:var(--muted);}
+.msg.error{background:#F4CCCC;color:#7A1F1F;}
+.msg.user{background:var(--accent);color:var(--accent-text);align-self:flex-end;border-bottom-right-radius:3px;}
+.cartnote{font-size:12px;color:var(--muted);margin-top:8px;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 10px;}
+.chip{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;}
+form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);}
+input[type=text]{flex:1;padding:11px 13px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14.5px;outline:none;}
+button{cursor:pointer;}
+button:focus-visible,input:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px;}
+.sendbtn{background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:0 18px;font-size:14px;font-weight:600;}
+.sendbtn:disabled{opacity:.6;cursor:default;}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="topbar"><span class="brand">⚡ Электрокомплект</span><nav class="cats" id="cats" aria-label="Категории товаров"></nav><button class="cartbtn" id="cartBtn" type="button" aria-expanded="false" aria-controls="cartDrawer" aria-label="Открыть корзину">🛒 <span id="cartCount">0</span></button></header>
+<div class="cartDrawer" id="cartDrawer" hidden aria-live="polite"></div>
+<main class="grid" id="grid" aria-live="polite"></main>
+<section class="chatdock">
+<div class="chatheader">ИИ-консультант <span>отвечает по каталогу · наличие · аналоги · сравнение</span></div>
+<div class="msgs" id="msgs" role="log" aria-live="polite" aria-label="Сообщения консультанта"></div>
+<div class="chips">
+<button class="chip" type="button" data-q="Какие лампочки есть в наличии?">Лампочки в наличии</button>
+<button class="chip" type="button" data-q="Что лучше: автомат 515291 или 515293?">Что лучше?</button>
+<button class="chip" type="button" data-q="Какие условия доставки и оплаты?">Условия покупки</button>
+</div>
+<form id="f"><input id="inp" type="text" placeholder="Спросите про товар, наличие, аналоги, что лучше…" autocomplete="off" maxlength="2000" aria-label="Сообщение консультанту"><button class="sendbtn" id="sendBtn" type="submit" aria-label="Отправить сообщение">➤</button></form>
+</section>
+</div>
+<script>
+// Функция /api/chat живёт в том же проекте Cloudflare Pages, что и сайт —
+// поэтому путь относительный, ничего подставлять не нужно.
+const API_ENDPOINT = "/api/chat";
+
+let PRODUCTS = [];
+let CAT_COLOR = {};
+let CONDITIONS = "";
+
+function stockTotal(p){return Object.values(p.stock).reduce((a,b)=>a+b,0);}
+function esc(value){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function stockStr(p){return Object.entries(p.stock).map(([k,v])=>k+': '+v).join(', ');}
+function findById(id){return PRODUCTS.find(p=>p.id===id);}
+function fmtProduct(p){const avail=stockTotal(p)>0?('в наличии — '+stockStr(p)):'нет в наличии';return `${p.name} (арт. ${p.id}) — ${p.specs}; сертификат: ${p.cert}; цена: ${p.price.toLocaleString('ru')} тг; ${avail}`;}
+function analogs(p){return PRODUCTS.filter(x=>x.cat===p.cat&&x.id!==p.id&&stockTotal(x)>0);}
+function fallbackMatches(t){const tl=t.toLowerCase();const words=tl.split(/\s+/).filter(w=>w.length>2);return PRODUCTS.map(p=>{const hay=(p.name+' '+p.cat).toLowerCase();let s=0;for(const w of words){if(hay.includes(w)||hay.includes(w.slice(0,Math.min(5,w.length))))s++;}return{p,s};}).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.p);}
+function isConfirm(t){return /\b(да|добавь|добавить|подтвержда|ок|окей|го|беру|оформ)\b/i.test(t);}
+function isConditions(t){return /оплат|доставк|партия|самовывоз/i.test(t);}
+function fallbackReply(t){
+  const m=t.match(/\b\d{5,6}\b/);
+  if(m){const p=findById(+m[0]);if(!p)return{reply:'Товар с таким артикулом не найден.',offer:null};
+    if(stockTotal(p)>0)return{reply:fmtProduct(p)+'\nДобавить 1 шт. в корзину?',offer:{id:p.id,qty:1}};
+    const al=analogs(p);return{reply:fmtProduct(p)+(al.length?('\nАналоги:\n'+al.map(fmtProduct).join('\n')):'\nАналогов в наличии нет.'),offer:null};}
+  if(isConditions(t))return{reply:CONDITIONS,offer:null};
+  const matches=fallbackMatches(t);
+  if(matches.length){const inStock=matches.filter(p=>stockTotal(p)>0);
+    if(inStock.length)return{reply:'В наличии:\n'+inStock.map(fmtProduct).join('\n')+(inStock.length===1?'\nДобавить 1 шт. в корзину?':''),offer:inStock.length===1?{id:inStock[0].id,qty:1}:null};
+    const al=analogs(matches[0]);return{reply:'По этому запросу сейчас ничего нет в наличии.'+(al.length?('\nБлижайшие аналоги:\n'+al.map(fmtProduct).join('\n')):''),offer:null};}
+  return{reply:'Уточните: какой товар, артикул, наличие, аналог, сравнение или условия покупки вас интересуют?',offer:null};
+}
+async function aiReply(text,hist){
+  try{
+    const r=await fetch(API_ENDPOINT,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text,history:hist.slice(-8)})
+    });
+    if(!r.ok) return null;
+    const data=await r.json();
+    if(typeof data.reply!=='string') return null;
+    return data;
+  }catch(e){return null;}
+}
+let pending=null, history=[], cart=[], curCat='Все';
+const msgsEl=document.getElementById('msgs');
+function addMsg(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;return d;}
+function showTyping(){const d=document.createElement('div');d.className='msg bot typing';d.textContent='печатает…';msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;return d;}
+function saveHist(){try{localStorage.setItem('ekt_chat_v3',JSON.stringify(history.slice(-40)));}catch(e){}}
+function loadHist(){try{return JSON.parse(localStorage.getItem('ekt_chat_v3')||'[]');}catch(e){return[];}}
+function saveCart(){try{localStorage.setItem('ekt_cart_v3',JSON.stringify(cart.map(c=>({id:c.p.id,qty:c.qty}))));}catch(e){}}
+function loadCart(){try{
+  const raw=JSON.parse(localStorage.getItem('ekt_cart_v3')||'[]');
+  return raw.map(r=>{const p=findById(r.id);return p?{p,qty:r.qty}:null;}).filter(Boolean);
+}catch(e){return[];}}
+function updateCartUI(){document.getElementById('cartCount').textContent=cart.reduce((a,c)=>a+c.qty,0);renderDrawer();saveCart();}
+function renderDrawer(){const el=document.getElementById('cartDrawer');if(!cart.length){el.innerHTML='<span style="color:var(--muted)">Корзина пуста.</span>';return;}
+  const sum=cart.reduce((a,c)=>a+c.p.price*c.qty,0);
+  el.innerHTML=cart.map(c=>`<div class="crow"><span>${esc(c.p.name)} × ${c.qty}</span><span>${(c.p.price*c.qty).toLocaleString('ru')} тг</span></div>`).join('')
+  +`<div class="crow" style="font-weight:700;margin-top:4px;"><span>Итого</span><span>${sum.toLocaleString('ru')} тг</span></div>`
+  +`<div style="margin-top:8px;"><button class="clearbtn" id="clearCart">Очистить</button><div class="cartnote">Корзина хранится только в этом браузере. Подключите свою систему заказов перед запуском продаж.</div></div>`;
+  document.getElementById('clearCart').onclick=()=>{cart=[];updateCartUI();};}
+function cartQtyFor(id){const row=cart.find(c=>c.p.id===id);return row?row.qty:0;}
+function commitAdd(p,qty){
+  const already=cartQtyFor(p.id);
+  const allowed=Math.max(0,Math.min(qty,stockTotal(p)-already));
+  if(allowed<=0) return 0;
+  const row=cart.find(c=>c.p.id===p.id);
+  if(row) row.qty+=allowed; else cart.push({p,qty:allowed});
+  updateCartUI();
+  return allowed;
+}
+function renderCats(){const el=document.getElementById('cats');const all=['Все',...new Set(PRODUCTS.map(p=>p.cat))];
+  el.innerHTML=all.map(c=>`<button type="button" class="catchip${c===curCat?' active':''}" data-c="${esc(c)}" aria-pressed="${c===curCat}">${esc(c)}</button>`).join('');
+  el.querySelectorAll('.catchip').forEach(s=>s.onclick=()=>{curCat=s.dataset.c;renderCats();renderGrid();});}
+function renderGrid(){const el=document.getElementById('grid');const list=PRODUCTS.filter(p=>curCat==='Все'||p.cat===curCat);
+  if(!list.length){el.innerHTML='<div style="padding:20px;color:var(--muted);grid-column:1/-1;">В этой категории пока пусто.</div>';return;}
+  el.innerHTML=list.map(p=>{const inStock=stockTotal(p)>0;
+    return `<div class="card"><div class="swatch" style="background:${CAT_COLOR[p.cat]||'#999'}"></div><div class="cname">${esc(p.name)}</div><div class="cspec">${esc(p.specs)}</div>
+    <div class="crow2"><span class="cprice">${p.price.toLocaleString('ru')} тг</span><span class="cstock ${inStock?'in':'out'}">${inStock?'в наличии':'нет в наличии'}</span></div>
+    <button class="addbtn" data-id="${p.id}" data-mode="${inStock?'add':'analog'}">${inStock?'В корзину':'Показать аналоги'}</button></div>`;}).join('');
+  el.querySelectorAll('.addbtn').forEach(b=>b.onclick=()=>{const p=findById(+b.dataset.id);
+    if(b.dataset.mode==='add'){const added=commitAdd(p,1);b.textContent=added?'Добавлено ✓':'Нет в наличии';setTimeout(()=>{b.textContent='В корзину';},1200);}
+    else{document.getElementById('inp').value='Какие аналоги есть у товара '+p.id+'?';document.getElementById('f').dispatchEvent(new Event('submit',{cancelable:true}));document.querySelector('.chatdock').scrollIntoView({behavior:'smooth'});}});}
+function doAdd(){
+  const p=pending?pending.product:null;
+  if(!p){pending=null;addMsg('Не нашёл этот товар в каталоге, уточните артикул.','bot');return;}
+  const qty=pending.qty||1;
+  const added=commitAdd(p,qty);
+  pending=null;
+  const sum=cart.reduce((a,c)=>a+c.p.price*c.qty,0);
+  const msg=added>0
+    ?`Добавлено: ${p.name} × ${added} шт. В корзине: ${cart.reduce((a,c)=>a+c.qty,0)} шт. на ${sum.toLocaleString('ru')} тг.`
+    :`Не удалось добавить — товара нет в наличии или весь остаток уже в корзине.`;
+  addMsg(msg,'bot');
+  history.push({role:'assistant',content:msg});
+  saveHist();
+}
+function setSending(on){
+  document.getElementById('sendBtn').disabled=on;
+  document.getElementById('inp').disabled=on;
+}
+async function handle(text){
+  history.push({role:'user',content:text});
+  if(pending&&isConfirm(text)){doAdd();return;}
+  setSending(true);
+  const typing=showTyping();
+  let out=await aiReply(text,history.slice(0,-1));
+  typing.remove();
+  let isError=false;
+  if(!out||typeof out.reply!=='string'){out=fallbackReply(text);}
+  pending=out.offer&&out.offer.id?{product:findById(out.offer.id),qty:out.offer.qty||1}:null;
+  addMsg(out.reply,isError?'error bot':'bot');
+  history.push({role:'assistant',content:out.reply});
+  saveHist();
+  setSending(false);
+}
+async function init(){
+  try{
+    const res=await fetch('./products.json');
+    const data=await res.json();
+    PRODUCTS=data.items;
+    CAT_COLOR=data.catColors;
+    CONDITIONS=data.conditions;
+  }catch(e){
+    addMsg('Не удалось загрузить каталог товаров (products.json). Проверьте, что файл лежит рядом с index.html.','bot');
+  }
+  cart=loadCart();
+  renderCats();renderGrid();updateCartUI();
+  const h=loadHist();
+  if(h.length){history=h;h.forEach(m=>addMsg(m.content,m.role==='user'?'user':'bot'));}
+  else addMsg('Здравствуйте! Я консультант ekt.kz. Спросите про товар, наличие, аналоги, сравнение или условия покупки.','bot');
+}
+document.getElementById('cartBtn').onclick=()=>{const d=document.getElementById('cartDrawer');d.hidden=!d.hidden;document.getElementById('cartBtn').setAttribute('aria-expanded',String(!d.hidden));};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.getElementById('inp').value=c.dataset.q;document.getElementById('f').dispatchEvent(new Event('submit',{cancelable:true}));});
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();const inp=document.getElementById('inp');const v=inp.value.trim();if(!v)return;addMsg(v,'user');inp.value='';await handle(v);};
+init();
+</script>
+</body>
+</html>
