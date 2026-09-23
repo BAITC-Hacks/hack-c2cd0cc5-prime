@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ekt.kz — витрина и ИИ-консультант</title>
+<style>
+:root{
+  --bg:#EBEDF0; --surface:#fff; --text:#1C2024; --muted:#6B7280;
+  --accent:#B5692C; --accent-text:#fff; --border:#D7DAE0; --bot:#E7E9EC;
+  --header-bg:#20242A; --header-text:#F1F1EF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --surface:#1B1E22; --text:#E7E9EC; --muted:#9BA1A8;
+    --accent:#D98A4B; --accent-text:#14171A; --border:#2A2E34; --bot:#242832;
+    --header-bg:#0E1013; --header-text:#F1F1EF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --surface:#1B1E22; --text:#E7E9EC; --muted:#9BA1A8;
+  --accent:#D98A4B; --accent-text:#14171A; --border:#2A2E34; --bot:#242832;
+  --header-bg:#0E1013; --header-text:#F1F1EF;
+}
+*{box-sizing:border-box;}
+html,body{min-height:100%;margin:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+.page{max-width:1000px;margin:0 auto;background:var(--surface);min-height:100%;}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--header-bg);color:var(--header-text);flex-wrap:wrap;}
+.brand{font-weight:700;font-size:16px;white-space:nowrap;}
+.cats{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:120px;}
+.catchip{background:rgba(255,255,255,.08);color:#D7DAE0;border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 10px;font-size:12.5px;white-space:nowrap;cursor:pointer;}
+.catchip.active{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+.cartbtn{background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;white-space:nowrap;font-size:13.5px;}
+.cartDrawer{border-bottom:1px solid var(--border);padding:12px 16px;background:var(--bg);font-size:13.5px;}
+.cartDrawer .crow{display:flex;justify-content:space-between;padding:3px 0;}
+.clearbtn{background:none;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12.5px;color:var(--muted);cursor:pointer;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;padding:14px 16px;}
+.card{border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:5px;}
+.swatch{height:5px;border-radius:3px;}
+.cname{font-size:13px;font-weight:600;line-height:1.25;min-height:33px;}
+.cspec{font-size:11.5px;color:var(--muted);}
+.crow2{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-top:2px;}
+.cprice{font-weight:700;}
+.cstock{font-size:11px;}
+.cstock.in{color:#2E8B57;}
+.cstock.out{color:#C0392B;}
+.addbtn{margin-top:4px;border:none;border-radius:7px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-text);}
+.chatdock{border-top:3px solid var(--border);}
+.chatheader{padding:12px 16px;font-weight:700;font-size:14.5px;border-bottom:1px solid var(--border);}
+.chatheader span{font-weight:400;color:var(--muted);font-size:12px;}
+.msgs{height:320px;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:9px;}
+.msg{max-width:84%;padding:9px 12px;border-radius:10px;line-height:1.42;font-size:14px;white-space:pre-wrap;}
+.msg.bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:3px;}
+.msg.typing{font-style:italic;color:var(--muted);}
+.msg.user{background:var(--accent);color:var(--accent-text);align-self:flex-end;border-bottom-right-radius:3px;}
+.cartlink{display:inline-block;background:var(--accent);color:var(--accent-text)!important;text-decoration:none;padding:7px 12px;border-radius:7px;font-size:13px;font-weight:600;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 10px;}
+.chip{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;}
+form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);}
+input[type=text]{flex:1;padding:11px 13px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14.5px;outline:none;}
+button{cursor:pointer;}
+.sendbtn{background:var(--accent);color:var(--accent-text);border:none;border-radius:8px;padding:0 18px;font-size:14px;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="topbar"><span class="brand">⚡ Электрокомплект</span><nav class="cats" id="cats"></nav><button class="cartbtn" id="cartBtn">🛒 <span id="cartCount">0</span></button></header>
+<div class="cartDrawer" id="cartDrawer" hidden></div>
+<main class="grid" id="grid"></main>
+<section class="chatdock">
+<div class="chatheader">ИИ-консультант <span>отвечает по каталогу · наличие · аналоги · сравнение</span></div>
+<div class="msgs" id="msgs"></div>
+<div class="chips">
+<div class="chip" data-q="Какие лампочки есть в наличии?">Лампочки в наличии</div>
+<div class="chip" data-q="Что лучше: автомат 515291 или 515293?">Что лучше?</div>
+<div class="chip" data-q="Какие условия доставки и оплаты?">Условия покупки</div>
+</div>
+<form id="f"><input id="inp" type="text" placeholder="Спросите про товар, наличие, аналоги, что лучше…" autocomplete="off"><button class="sendbtn">➤</button></form>
+</section>
+</div>
+<script>
+const PRODUCTS=[
+{id:515291,name:"Автоматический выключатель ABB SH201 C16",cat:"Автоматические выключатели",specs:"1P, 16А, х-ка C, 6кА",cert:"ЕАС",price:3200,stock:{"Алматы":45,"Астана":12}},
+{id:515292,name:"Автоматический выключатель ABB SH201 C20",cat:"Автоматические выключатели",specs:"1P, 20А, х-ка C, 6кА",cert:"ЕАС",price:3350,stock:{"Алматы":0,"Астана":0}},
+{id:515293,name:"Автоматический выключатель IEK ВА47-29 C20",cat:"Автоматические выключатели",specs:"1P, 20А, х-ка C, 4.5кА",cert:"ЕАС",price:2800,stock:{"Алматы":30,"Астана":5}},
+{id:515294,name:"Автоматический выключатель ABB SH201 C25",cat:"Автоматические выключатели",specs:"1P, 25А, х-ка C, 6кА",cert:"ЕАС",price:3500,stock:{"Алматы":18,"Астана":6}},
+{id:520101,name:"УЗО ABB F202 25A/30mA",cat:"УЗО",specs:"2P, 25А, 30мА, тип AC",cert:"ЕАС",price:12500,stock:{"Алматы":20,"Астана":0}},
+{id:520102,name:"УЗО ABB F202 40A/30mA",cat:"УЗО",specs:"2P, 40А, 30мА, тип AC",cert:"ЕАС",price:14200,stock:{"Алматы":0,"Астана":0}},
+{id:530045,name:"Кабель ВВГнг-LS 3х2.5 (бухта 100м)",cat:"Кабельная продукция",specs:"3х2.5мм², нг-LS",cert:"ЕАС, пожарный",price:45000,stock:{"Алматы":8,"Астана":3}},
+{id:530046,name:"Кабель ВВГнг-LS 3х1.5 (бухта 100м)",cat:"Кабельная продукция",specs:"3х1.5мм², нг-LS",cert:"ЕАС, пожарный",price:32000,stock:{"Алматы":0,"Астана":0}},
+{id:530047,name:"Кабель ВВГ 3х1.5 (бухта 100м)",cat:"Кабельная продукция",specs:"3х1.5мм², без нг-LS",cert:"ЕАС",price:28500,stock:{"Алматы":15,"Астана":0}},
+{id:530048,name:"Кабель ПВС 2х1.5 (бухта 100м)",cat:"Кабельная продукция",specs:"2х1.5мм², гибкий",cert:"ЕАС",price:19500,stock:{"Алматы":22,"Астана":9}},
+{id:540012,name:"Розетка Legrand Valena скрытая с/з",cat:"Розетки и выключатели",specs:"16А, 250В, IP20",cert:"ЕАС",price:1450,stock:{"Алматы":100,"Астана":40}},
+{id:540013,name:"Выключатель Legrand Valena 1-клавишный",cat:"Розетки и выключатели",specs:"10А, 250В, IP20",cert:"ЕАС",price:1200,stock:{"Алматы":80,"Астана":25}},
+{id:540014,name:"Розетка с УЗО Schneider Electric",cat:"Розетки и выключатели",specs:"16А, 30мА, IP20",cert:"ЕАС",price:5400,stock:{"Алматы":0,"Астана":0}},
+{id:550001,name:"Кабель-канал 25х16 (2м)",cat:"Кабель-каналы",specs:"25х16мм, белый, самозатух.",cert:"—",price:650,stock:{"Алматы":200,"Астана":90}},
+{id:550002,name:"Кабель-канал 40х25 (2м)",cat:"Кабель-каналы",specs:"40х25мм, белый, самозатух.",cert:"—",price:1050,stock:{"Алматы":140,"Астана":55}},
+{id:560001,name:"Лампа светодиодная Osram A60 9Вт Е27",cat:"Освещение",specs:"9Вт, 806лм, 4000К, Е27",cert:"ЕАС",price:850,stock:{"Алматы":300,"Астана":120}},
+{id:560002,name:"Лампа светодиодная Osram A60 12Вт Е27",cat:"Освещение",specs:"12Вт, 1150лм, 4000К, Е27",cert:"ЕАС",price:1100,stock:{"Алматы":150,"Астана":0}},
+{id:560003,name:"Лампа светодиодная Philips A60 9Вт Е27",cat:"Освещение",specs:"9Вт, 830лм, 3000К, Е27",cert:"ЕАС",price:990,stock:{"Алматы":0,"Астана":0}},
+{id:560004,name:"Лампа светодиодная Gauss E14 свеча 6Вт",cat:"Освещение",specs:"6Вт, 540лм, 4000К, Е14",cert:"ЕАС",price:690,stock:{"Алматы":80,"Астана":40}},
+{id:560005,name:"Прожектор светодиодный 50Вт IP65",cat:"Освещение",specs:"50Вт, 4500лм, IP65",cert:"ЕАС",price:6200,stock:{"Алматы":25,"Астана":10}}
+];
+const CAT_COLOR={"Автоматические выключатели":"#B5692C","УЗО":"#3E8E7E","Кабельная продукция":"#3B5BA5","Розетки и выключатели":"#7A4B8C","Кабель-каналы":"#5B6B7A","Освещение":"#C79A2E"};
+const CONDITIONS="Оплата: безналичный расчёт, карта или QR на сайте; для юр.лиц — по счёту. Доставка: по городу — 1–2 дня, по Казахстану — транспортными компаниями. Минимальная партия не установлена, самовывоз со склада бесплатный. (пример-заглушка — уточните реальные условия у партнёра)";
+function stockTotal(p){return Object.values(p.stock).reduce((a,b)=>a+b,0);}
+function stockStr(p){return Object.entries(p.stock).map(([k,v])=>k+': '+v).join(', ');}
+function findById(id){return PRODUCTS.find(p=>p.id===id);}
+function fmtProduct(p){const avail=stockTotal(p)>0?('в наличии — '+stockStr(p)):'нет в наличии';return `${p.name} (арт. ${p.id}) — ${p.specs}; сертификат: ${p.cert}; цена: ${p.price.toLocaleString('ru')} тг; ${avail}`;}
+function analogs(p){return PRODUCTS.filter(x=>x.cat===p.cat&&x.id!==p.id&&stockTotal(x)>0);}
+function fallbackMatches(t){const tl=t.toLowerCase();const words=tl.split(/\s+/).filter(w=>w.length>2);return PRODUCTS.map(p=>{const hay=(p.name+' '+p.cat).toLowerCase();let s=0;for(const w of words){if(hay.includes(w)||hay.includes(w.slice(0,Math.min(5,w.length))))s++;}return{p,s};}).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.p);}
+function isConfirm(t){return /\b(да|добавь|добавить|подтвержда|ок|окей|го|беру|оформ)\b/i.test(t);}
+function isConditions(t){return /оплат|доставк|партия|самовывоз/i.test(t);}
+function fallbackReply(t){
+  const m=t.match(/\b\d{5,6}\b/);
+  if(m){const p=findById(+m[0]);if(!p)return{reply:'Товар с таким артикулом не найден.',offer:null};
+    if(stockTotal(p)>0)return{reply:fmtProduct(p)+'\nДобавить 1 шт. в корзину?',offer:{id:p.id,qty:1}};
+    const al=analogs(p);return{reply:fmtProduct(p)+(al.length?('\nАналоги:\n'+al.map(fmtProduct).join('\n')):'\nАналогов в наличии нет.'),offer:null};}
+  if(isConditions(t))return{reply:CONDITIONS,offer:null};
+  const matches=fallbackMatches(t);
+  if(matches.length){const inStock=matches.filter(p=>stockTotal(p)>0);
+    if(inStock.length)return{reply:'В наличии:\n'+inStock.map(fmtProduct).join('\n')+(inStock.length===1?'\nДобавить 1 шт. в корзину?':''),offer:inStock.length===1?{id:inStock[0].id,qty:1}:null};
+    const al=analogs(matches[0]);return{reply:'По этому запросу сейчас ничего нет в наличии.'+(al.length?('\nБлижайшие аналоги:\n'+al.map(fmtProduct).join('\n')):''),offer:null};}
+  return{reply:'Уточните: какой товар, артикул, наличие, аналог, сравнение или условия покупки вас интересуют?',offer:null};
+}
+const CATALOG_TEXT=PRODUCTS.map(p=>`${p.id}|${p.name}|${p.cat}|${p.specs}|серт:${p.cert}|${p.price}тг|остатки:${stockStr(p)}`).join('\n');
+const SYS_PREFIX=`Ты — ИИ-консультант интернет-магазина электротехники ekt.kz. Пиши чётко и по делу, без вводных фраз и лишних слов, по-русски, СТРОГО на основе каталога ниже — никогда не придумывай артикулы, цены, характеристики или остатки, которых нет в списке.
+Каталог (артикул|название|категория|характеристики|сертификат|цена|остатки по складам):
+${CATALOG_TEXT}
+Правила:
+- Конкретный товар/артикул — дай характеристики, сертификат, цену, наличие.
+- Широкий/категорийный запрос (например просто "лампочка", "розетки", "автоматы") — перечисли ВСЕ подходящие товары в наличии с ценой и остатками, а не один.
+- Нет в наличии — обязательно предложи аналог(и) из той же категории в наличии, с коротким обоснованием.
+- Спрашивают "что лучше"/сравнить — сравни конкретные товары по характеристикам (ток, мощность, класс, цена и т.п.) и обоснованно порекомендуй один.
+- Один конкретный товар в наличии явно интересует клиента — спроси, добавить ли 1 шт. в корзину, и заполни offer.
+- Условия покупки: ${CONDITIONS}
+- В корзину товар добавляет код сайта только после явного подтверждения ("да"/"добавь" и т.п.) уже предложенного товара — offer заполняй только когда ПРЕДЛАГАЕШЬ товар.
+Ответь строго JSON: {"reply":"текст ответа","offer":{"id":артикул,"qty":количество} или null}`;
+const samplePromise=(typeof claude!=='undefined'&&claude.use)?claude.use('sample').catch(()=>null):Promise.resolve(null);
+async function aiReply(text,hist){
+  const s=await samplePromise; if(!s)return null;
+  const turns=[...hist.slice(-8),{role:'user',content:SYS_PREFIX+'\n\nВопрос клиента: "'+text+'"'}];
+  try{return await s.json(turns,{cache:false,modelTier:'quick'});}catch(e){return null;}
+}
+let pending=null, history=[], cart=[], curCat='Все';
+const msgsEl=document.getElementById('msgs');
+function addMsg(text,who,link){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;if(link){d.appendChild(document.createElement('br'));const a=document.createElement('a');a.href=link;a.target='_blank';a.className='cartlink';a.textContent='Перейти в корзину →';d.appendChild(a);}msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;return d;}
+function showTyping(){const d=document.createElement('div');d.className='msg bot typing';d.textContent='печатает…';msgsEl.appendChild(d);msgsEl.scrollTop=msgsEl.scrollHeight;return d;}
+function saveHist(){try{localStorage.setItem('ekt_chat_v3',JSON.stringify(history.slice(-40)));}catch(e){}}
+function loadHist(){try{return JSON.parse(localStorage.getItem('ekt_chat_v3')||'[]');}catch(e){return[];}}
+function updateCartUI(){document.getElementById('cartCount').textContent=cart.reduce((a,c)=>a+c.qty,0);renderDrawer();}
+function renderDrawer(){const el=document.getElementById('cartDrawer');if(!cart.length){el.innerHTML='<span style="color:var(--muted)">Корзина пуста.</span>';return;}
+  const sum=cart.reduce((a,c)=>a+c.p.price*c.qty,0);
+  el.innerHTML=cart.map(c=>`<div class="crow"><span>${c.p.name} × ${c.qty}</span><span>${(c.p.price*c.qty).toLocaleString('ru')} тг</span></div>`).join('')
+  +`<div class="crow" style="font-weight:700;margin-top:4px;"><span>Итого</span><span>${sum.toLocaleString('ru')} тг</span></div>`
+  +`<div style="margin-top:8px;display:flex;gap:8px;"><a class="cartlink" href="https://ekt.kz/cart" target="_blank">Перейти в корзину →</a><button class="clearbtn" id="clearCart">Очистить</button></div>`;
+  document.getElementById('clearCart').onclick=()=>{cart=[];updateCartUI();};}
+function commitAdd(p,qty){cart.push({p,qty:Math.min(qty,stockTotal(p))});updateCartUI();}
+function renderCats(){const el=document.getElementById('cats');const all=['Все',...new Set(PRODUCTS.map(p=>p.cat))];
+  el.innerHTML=all.map(c=>`<span class="catchip${c===curCat?' active':''}" data-c="${c}">${c}</span>`).join('');
+  el.querySelectorAll('.catchip').forEach(s=>s.onclick=()=>{curCat=s.dataset.c;renderCats();renderGrid();});}
+function renderGrid(){const el=document.getElementById('grid');const list=PRODUCTS.filter(p=>curCat==='Все'||p.cat===curCat);
+  el.innerHTML=list.map(p=>{const inStock=stockTotal(p)>0;
+    return `<div class="card"><div class="swatch" style="background:${CAT_COLOR[p.cat]||'#999'}"></div><div class="cname">${p.name}</div><div class="cspec">${p.specs}</div>
+    <div class="crow2"><span class="cprice">${p.price.toLocaleString('ru')} тг</span><span class="cstock ${inStock?'in':'out'}">${inStock?'в наличии':'нет в наличии'}</span></div>
+    <button class="addbtn" data-id="${p.id}" data-mode="${inStock?'add':'analog'}">${inStock?'В корзину':'Показать аналоги'}</button></div>`;}).join('');
+  el.querySelectorAll('.addbtn').forEach(b=>b.onclick=()=>{const p=findById(+b.dataset.id);
+    if(b.dataset.mode==='add'){commitAdd(p,1);b.textContent='Добавлено ✓';setTimeout(()=>{b.textContent='В корзину';},1200);}
+    else{document.getElementById('inp').value='Какие аналоги есть у товара '+p.id+'?';document.getElementById('f').dispatchEvent(new Event('submit',{cancelable:true}));document.querySelector('.chatdock').scrollIntoView({behavior:'smooth'});}});}
+function doAdd(){const p=pending.product,qty=Math.min(pending.qty,stockTotal(p));commitAdd(p,qty);pending=null;const sum=cart.reduce((a,c)=>a+c.p.price*c.qty,0);const msg=`Добавлено: ${p.name} × ${qty} шт. В корзине: ${cart.reduce((a,c)=>a+c.qty,0)} шт. на ${sum.toLocaleString('ru')} тг.`;addMsg(msg,'bot','https://ekt.kz/cart');history.push({role:'assistant',content:msg});saveHist();}
+async function handle(text){
+  history.push({role:'user',content:text});
+  if(pending&&isConfirm(text)){doAdd();return;}
+  const typing=showTyping();
+  let out=await aiReply(text,history);
+  typing.remove();
+  if(!out||typeof out.reply!=='string')out=fallbackReply(text);
+  pending=out.offer&&out.offer.id?{product:findById(out.offer.id),qty:out.offer.qty||1}:null;
+  addMsg(out.reply,'bot');
+  history.push({role:'assistant',content:out.reply});
+  saveHist();
+}
+document.getElementById('cartBtn').onclick=()=>{const d=document.getElementById('cartDrawer');d.hidden=!d.hidden;};
+renderCats();renderGrid();updateCartUI();
+(function init(){const h=loadHist();if(h.length){history=h;h.forEach(m=>addMsg(m.content,m.role==='user'?'user':'bot'));}else addMsg('Здравствуйте! Я консультант ekt.kz. Спросите про товар, наличие, аналоги, сравнение или условия покупки.','bot');})();
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.getElementById('inp').value=c.dataset.q;document.getElementById('f').dispatchEvent(new Event('submit',{cancelable:true}));});
+document.getElementById('f').onsubmit=async e=>{e.preventDefault();const inp=document.getElementById('inp');const v=inp.value.trim();if(!v)return;addMsg(v,'user');inp.value='';await handle(v);};
+</script>
+</body>
+</html>
